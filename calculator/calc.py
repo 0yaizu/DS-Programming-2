@@ -1,4 +1,5 @@
 import flet as ft
+import math
 
 
 class CalcButton(ft.ElevatedButton):
@@ -44,7 +45,7 @@ class CalculatorApp(ft.Container):
 				self.reset()
 
 				self.result = ft.Text(value="0", color=ft.colors.WHITE, size=20)
-				self.width = 425
+				self.width = 500
 				self.bgcolor = ft.colors.BLACK
 				self.border_radius = ft.border_radius.all(20)
 				self.padding = 20
@@ -66,6 +67,7 @@ class CalculatorApp(ft.Container):
 								),
 								ft.Row(
 										controls=[
+												MoreActionButton(text="sin", button_clicked=self.button_clicked),
 												DigitButton(text="7", button_clicked=self.button_clicked),
 												DigitButton(text="8", button_clicked=self.button_clicked),
 												DigitButton(text="9", button_clicked=self.button_clicked),
@@ -74,6 +76,7 @@ class CalculatorApp(ft.Container):
 								),
 								ft.Row(
 										controls=[
+												MoreActionButton(text="cos", button_clicked=self.button_clicked),
 												DigitButton(text="4", button_clicked=self.button_clicked),
 												DigitButton(text="5", button_clicked=self.button_clicked),
 												DigitButton(text="6", button_clicked=self.button_clicked),
@@ -82,6 +85,7 @@ class CalculatorApp(ft.Container):
 								),
 								ft.Row(
 										controls=[
+												MoreActionButton(text="%=", button_clicked=self.button_clicked),
 												DigitButton(text="1", button_clicked=self.button_clicked),
 												DigitButton(text="2", button_clicked=self.button_clicked),
 												DigitButton(text="3", button_clicked=self.button_clicked),
@@ -90,9 +94,9 @@ class CalculatorApp(ft.Container):
 								),
 								ft.Row(
 										controls=[
-												DigitButton(
-														text="0", expand=2, button_clicked=self.button_clicked
-												),
+												MoreActionButton(text="LCM", button_clicked=self.button_clicked),
+												MoreActionButton(text="GCM", button_clicked=self.button_clicked),
+												DigitButton(text="0", expand=1, button_clicked=self.button_clicked),
 												DigitButton(text=".", button_clicked=self.button_clicked),
 												ActionButton(text="=", button_clicked=self.button_clicked),
 										]
@@ -114,7 +118,7 @@ class CalculatorApp(ft.Container):
 						else:
 								self.result.value = self.result.value + data
 
-				elif data in ("+", "-", "*", "/", "^"):
+				elif data in ("+", "-", "*", "/", "^", "%=", "LCM", "GCM"):
 						self.result.value = self.calculate(
 								self.operand1, float(self.result.value), self.operator
 						)
@@ -124,6 +128,14 @@ class CalculatorApp(ft.Container):
 						else:
 								self.operand1 = float(self.result.value)
 						self.new_operand = True
+				
+				elif data in ("sin"):
+						self.result.value = math.sin(math.radians(float(self.result.value)))
+						self.reset()
+
+				elif data in ("cos"):
+						self.result.value = math.cos(math.radians(float(self.result.value)))
+						self.reset()
 
 				elif data in ("="):
 						self.result.value = self.calculate(
@@ -168,8 +180,18 @@ class CalculatorApp(ft.Container):
 								return "Error"
 						else:
 								return self.format_number(operand1 / operand2)
+						
 				elif operator == "^":
 						return self.format_number(operand1 ** operand2)
+				
+				elif operator == "%=":
+						return self.format_number(operand1 % operand2)
+				
+				elif operator == "LCM":
+						return self.format_number(math.lcm(int(operand1), int(operand2)))
+				
+				elif operator == "GCM":
+						return self.format_number(math.gcd(int(operand1), int(operand2)))
 
 		def reset(self):
 				self.operator = "+"
