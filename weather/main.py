@@ -1,5 +1,5 @@
 import flet as ft
-import requests, json, date
+import requests, json, datetime
 
 area_api_req = json.loads(requests.get("http://www.jma.go.jp/bosai/common/const/area.json").text)
 
@@ -149,14 +149,30 @@ def main(page: ft.Page):
 		try:
 			req = json.loads(requests.get(f"https://www.jma.go.jp/bosai/forecast/data/forecast/{target_office_id.value}.json").text)
 			target_index = 0
+			area_codes = []
+			result.append(ft.Text("週間天気予報"))
 			print(req[1]["timeSeries"][0]["timeDefines"])
+			for area in req[1]["timeSeries"][0]["areas"]:
+				area_codes.append(area["area"]["code"])
+			# target_index = n.index(f'{target_area_id.value}')
+			print(target_area_id.value)
+			print(area_codes)
+			print(area_codes.index(f'{target_area_id.value}'))
+			# print(f"target_index: {target_index}")
 			# for area in req[1]["timeSeries"]["timeDefines"]["areas"]:
 			# 	n = []
 			# 	n.append(area["area"]["code"])
 			# 	target_index = n.index(f"{target_area_id.value}")
 			# 	print(f"target_index: {target_index}")
-			for date in req[1]["timeSeries"][0]["timeDefines"]:
-				result.append(ft.Text(date))
+			for date, pops, min_temp, max_temp in zip(req[1]["timeSeries"][0]["timeDefines"], req[1]["timeSeries"][0]["areas"][area_codes.index(f'{target_area_id.value}')]["pops"], req[1]["timeSeries"][1]["areas"][area_codes.index(f'{target_area_id.value}')]["tempsMin"], req[1]["timeSeries"][1]["areas"][area_codes.index(f'{target_area_id.value}')]["tempsMax"]):
+				result.append(ft.Column(
+					controls=[
+						ft.Text(f"日付: {date[0:10]}"),
+						ft.Text(f"降水確率: {pops}%"),
+						ft.Text(f"最低気温: {min_temp}℃"),
+						ft.Text(f"最高気温: {max_temp}℃"),
+					]
+				))
 		except:
 			result.append(ft.Text("No data available"))
 		return result
