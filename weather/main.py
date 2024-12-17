@@ -147,31 +147,32 @@ def main(page: ft.Page):
 		# ft.Text(f"Search Result: {target_office_id.value} -> {target_area_id.value}"),
 		# ft.Text(f"Selected Index: {target_selected_index.value}"),
 		try:
-			req = json.loads(requests.get(f"https://www.jma.go.jp/bosai/forecast/data/forecast/{target_office_id.value}.json").text)
-			target_index = 0
+			req = requests.get(f"https://www.jma.go.jp/bosai/forecast/data/forecast/{target_office_id.value}.json", timeout=10)
+			req_json = json.loads(req.text)
 			area_codes = []
-			result.append(ft.Text("週間天気予報"))
-			print(req[1]["timeSeries"][0]["timeDefines"])
-			for area in req[1]["timeSeries"][0]["areas"]:
+			weeks = req_json[1]["timeSeries"][0]
+			temp = req_json[1]["timeSeries"][1]["areas"]
+			for area in weeks["areas"]:
 				area_codes.append(area["area"]["code"])
-			# target_index = n.index(f'{target_area_id.value}')
-			print(target_area_id.value)
-			print(area_codes)
-			print(area_codes.index(f'{target_area_id.value}'))
-			# print(f"target_index: {target_index}")
-			# for area in req[1]["timeSeries"]["timeDefines"]["areas"]:
-			# 	n = []
-			# 	n.append(area["area"]["code"])
-			# 	target_index = n.index(f"{target_area_id.value}")
-			# 	print(f"target_index: {target_index}")
-			for date, pops, min_temp, max_temp in zip(req[1]["timeSeries"][0]["timeDefines"], req[1]["timeSeries"][0]["areas"][area_codes.index(f'{target_area_id.value}')]["pops"], req[1]["timeSeries"][1]["areas"][area_codes.index(f'{target_area_id.value}')]["tempsMin"], req[1]["timeSeries"][1]["areas"][area_codes.index(f'{target_area_id.value}')]["tempsMax"]):
+			for date, pops, min_temp, max_temp in zip(weeks["timeDefines"], weeks["areas"][area_codes.index(f'{target_area_id.value}')]["pops"], temp[area_codes.index(f'{target_area_id.value}')]["tempsMin"], temp[area_codes.index(f'{target_area_id.value}')]["tempsMax"]):
+				# pydate = datetime.datetime(date[0:4], date[5:7], date[8:10], date[11:13], date[14:16], date[17:19])
+				if min_temp == "":
+					min_temp = "N/A"
+				if max_temp == "":
+					max_temp = "N/A"
 				result.append(ft.Column(
 					controls=[
-						ft.Text(f"日付: {date[0:10]}"),
+						ft.Text(f"{date[5:7]} / {date[8:10]}"),
 						ft.Text(f"降水確率: {pops}%"),
-						ft.Text(f"最低気温: {min_temp}℃"),
-						ft.Text(f"最高気温: {max_temp}℃"),
-					]
+						ft.Row(
+							controls=[
+								ft.Text(f"{min_temp}", color="#0000ff"),
+								ft.Text(" / ", color="#000000"),
+								ft.Text(f"{max_temp}", color="#ff0000"),
+							],
+						)
+					],
+					horizontal_alignment=ft.CrossAxisAlignment.CENTER,
 				))
 		except:
 			result.append(ft.Text("No data available"))
@@ -299,12 +300,14 @@ def main(page: ft.Page):
 				title=ft.Text("Search Result", color="#ffffff"),
 				bgcolor= "#838e9a"
 			),
-			ft.Row(
-				controls=[
-					# ft.Text(f"Search Result: {target_office_id.value} -> {target_area_id.value}"),
-					# ft.Text(f"Selected Index: {target_selected_index.value}"),
-					*gen_weekly_weather(),
-				],
+			ft.Text("週間天気予報", size=20),
+			ft.Container(
+				margin=ft.Margin(top=0, bottom=0, left=100, right=100),
+				content=ft.Row(
+					controls=gen_weekly_weather(),
+					alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+					expand=True,
+				),
 			),
 			navigation_bar,
 		])
