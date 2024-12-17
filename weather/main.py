@@ -57,6 +57,7 @@ def main(page: ft.Page):
 		# print(json.dumps(req["centers"], indent=2, ensure_ascii=False))
 		global area_api_req
 		for center in area_api_req["centers"]:
+			# print(area_api_req["centers"][center]["children"])
 			result.append(ft.ExpansionTile(
 				title=ft.Text(area_api_req["centers"][center]["name"]),
 				initially_expanded=False,

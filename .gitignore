@@ -1,3 +1,4 @@
 .venv
 .DS_Store
 SA homeworks
+weather_data.db
