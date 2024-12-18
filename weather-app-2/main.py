@@ -190,8 +190,10 @@ def main(page: ft.Page):
 			print(target_office_id.value)
 			conn = sqlite3.connect(dbfile)
 			cur = conn.cursor()
-			cur.execute(f"SELECT date, min_temp, max_temp, pops FROM days_weather_{target_area_id.value} ORDER BY date ASC LIMIT 7")
-			for data in cur.fetchall():
+			cur.execute(f"SELECT date, min_temp, max_temp, pops FROM days_weather_{target_area_id.value} ORDER BY date DESC LIMIT 7")
+			select_result = cur.fetchall()
+			print(select_result)
+			for data in select_result:
 				print(data)
 				if data[1] == "": min_temp = "N/A"
 				else: min_temp = data[1]
