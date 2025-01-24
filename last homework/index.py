@@ -28,10 +28,15 @@ city_codes = {
 	"板橋区": 13119,
 }
 
-conn = sqlite3.connect('./rent_prices.db')
+# 保存するDBファイル名
+db_file = './rent_prices_many.db'
+# 特定の区を読み込むページ数(1ページあたり50件)
+max_pages = 40
+
+conn = sqlite3.connect(db_file)
 cur = conn.cursor()
 
-cur.execute('CREATE TABLE IF NOT EXISTS rent_prices(city TEXT, rent_price INTEGER)')
+cur.execute('CREATE TABLE IF NOT EXISTS rent_prices(city TEXT, rent_price INTEGER);')
 
 conn.commit()
 conn.close()
@@ -43,20 +48,20 @@ for city in tqdm(city_codes):
 	soup = BeautifulSoup(res.text, 'html.parser')
 
 	pages = int(soup.find('ol', {'class': 'pagination-parts'}).find_all('li')[-1].text)
-	for page in tqdm(range(1, 3)):
+	for page in tqdm(range(1, min(pages, max_pages) + 1)):
 		res = requests.get(url + f"&page={page}")
 		res.encoding = res.apparent_encoding
 		soup = BeautifulSoup(res.text, 'html.parser')
 		bukken_list = soup.find('div', {'id': 'js-bukkenList'})
-		for bukken_blocks in tqdm(bukken_list.find_all('ul', {'class': 'l-cassetteitem'})):
+		for bukken_blocks in bukken_list.find_all('ul', {'class': 'l-cassetteitem'}):
 			for bukken in bukken_blocks.find_all('li'):
 				try:
 					for cassetteitem in bukken.find('table', {'class': 'cassetteitem_other'}).find_all('tbody'):
-						conn = sqlite3.connect('./rent_prices.db')
+						conn = sqlite3.connect(db_file)
 						cur = conn.cursor()
 						rent_price = int(cassetteitem.find('span', {'class': 'cassetteitem_other-emphasis ui-text--bold'}).text[:-2])
-						tqdm.write(f'{city} / {rent_price}')
-						cur.execute(f'INSERT INTO rent_prices ("city", "rent_prices") VALUES ({city}, {rent_price});')
+						# tqdm.write(f'{city} / {rent_price}')
+						cur.execute(f'INSERT INTO rent_prices VALUES ("{city}", {rent_price});')
 						conn.commit()
 						conn.close()
 				except:
